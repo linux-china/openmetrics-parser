@@ -720,6 +720,7 @@ impl TryFrom<&str> for PrometheusType {
             "histogram" => Ok(PrometheusType::Histogram),
             "summary" => Ok(PrometheusType::Summary),
             "unknown" => Ok(PrometheusType::Unknown),
+            "untyped" => Ok(PrometheusType::Unknown),
             _ => Err(ParseError::InvalidMetric(format!(
                 "Invalid metric type: {}",
                 value
