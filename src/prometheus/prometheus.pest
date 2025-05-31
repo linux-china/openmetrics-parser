@@ -21,7 +21,7 @@ metricset = _{ (NEWLINE* ~ metricfamily)+ }
 metricfamily = { (metricdescriptor{1, 2} ~ metric*) |  metric+ }
 
 metricdescriptor = ${
-    hash ~ sp ~ kw_help ~ sp ~ metricname ~ sp ~ escapedstring ~ NEWLINE |
+    hash ~ sp ~ kw_help ~ sp ~ metricname ~ sp ~ helpstring ~ NEWLINE |
     hash ~ sp ~ kw_type ~ sp ~ metricname ~ sp ~ metrictype ~ NEWLINE
 }
 exemplar = ${ sp ~ hash ~ sp ~ labels ~ sp ~ number ~ (sp ~ timestamp)? }
@@ -40,5 +40,6 @@ number = @{ realnumber | sign ~ (^"inf" | ^"infinity") | ^"nan" }
 timestamp = @{ realnumber }
 realnumber = @{ sign? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT*)? ~ (("e" | "E") ~ sign? ~ ASCII_DIGIT+)? | sign? ~ ASCII_DIGIT+ }
 escapedstring = { escapedchar* }
+helpstring = { commentchar* }
 escapedchar = _{ normalchar | bs ~ (bs | "n" | dquote)}
 normalchar = _{ !(bs | NEWLINE | dquote) ~ ANY }
