@@ -666,6 +666,7 @@ impl MetricsType for PrometheusType {
             PrometheusType::Histogram => MetricValueMarshal::Histogram(HistogramValue::default()),
             PrometheusType::Counter => MetricValueMarshal::Counter(CounterValueMarshal::default()),
             PrometheusType::Unknown => MetricValueMarshal::Unknown(None),
+            PrometheusType::Untyped => MetricValueMarshal::Untyped(None),
             PrometheusType::Gauge => MetricValueMarshal::Gauge(None),
             PrometheusType::Summary => MetricValueMarshal::Summary(SummaryValue::default()),
         }

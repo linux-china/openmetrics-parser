@@ -10,6 +10,7 @@ use super::MetricsType;
 #[derive(Debug)]
 pub enum MetricValueMarshal {
     Unknown(Option<MetricNumber>),
+    Untyped(Option<MetricNumber>),
     Gauge(Option<MetricNumber>),
     Counter(CounterValueMarshal),
     Histogram(HistogramValue),

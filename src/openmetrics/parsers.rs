@@ -23,6 +23,7 @@ impl From<MetricValueMarshal> for OpenMetricsValue {
     fn from(s: MetricValueMarshal) -> OpenMetricsValue {
         match s {
             MetricValueMarshal::Unknown(s) => OpenMetricsValue::Unknown(s.unwrap()),
+            MetricValueMarshal::Untyped(s) => OpenMetricsValue::Untyped(s.unwrap()),
             MetricValueMarshal::Gauge(s) => OpenMetricsValue::Gauge(s.unwrap()),
             MetricValueMarshal::Counter(s) => OpenMetricsValue::Counter(s.into()),
             MetricValueMarshal::Histogram(s) => OpenMetricsValue::Histogram(s),

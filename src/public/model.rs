@@ -625,6 +625,7 @@ pub enum OpenMetricsType {
 
 #[derive(Debug, Clone)]
 pub enum OpenMetricsValue {
+    Untyped(MetricNumber),
     Unknown(MetricNumber),
     Gauge(MetricNumber),
     Counter(CounterValue),
@@ -647,6 +648,7 @@ impl RenderableMetricValue for OpenMetricsValue {
         let timestamp_str = timestamp.map(|t| format!(" {}", format_float(*t))).unwrap_or_default();
         match self {
             OpenMetricsValue::Unknown(n)
+            | OpenMetricsValue::Untyped(n)
             | OpenMetricsValue::Gauge(n)
             | OpenMetricsValue::StateSet(n) =>{
                 writeln!(
@@ -701,6 +703,7 @@ pub enum PrometheusType {
     Histogram,
     Summary,
     Unknown,
+    Untyped,
 }
 
 impl fmt::Display for PrometheusType {
@@ -711,6 +714,7 @@ impl fmt::Display for PrometheusType {
             PrometheusType::Histogram => "histogram",
             PrometheusType::Summary => "summary",
             PrometheusType::Unknown => "unknown",
+            PrometheusType::Untyped => "untyped",
         };
 
         f.write_str(out)
