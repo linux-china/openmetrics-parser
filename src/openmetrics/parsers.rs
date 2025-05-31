@@ -5,9 +5,9 @@ use crate::{
     },
     public::*,
 };
-use std::convert::TryFrom;
-
 use pest::Parser;
+use std::convert::TryFrom;
+use std::fmt;
 
 #[derive(Parser)]
 #[grammar = "openmetrics/openmetrics.pest"]
@@ -108,6 +108,23 @@ impl TryFrom<&str> for OpenMetricsType {
                 value
             ))),
         }
+    }
+}
+
+impl fmt::Display for OpenMetricsType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let out = match self {
+            OpenMetricsType::Counter => "counter",
+            OpenMetricsType::Gauge => "gauge",
+            OpenMetricsType::Histogram => "histogram",
+            OpenMetricsType::Summary => "summary",
+            OpenMetricsType::Unknown => "unknown",
+            OpenMetricsType::GaugeHistogram => "gaugehistogram",
+            OpenMetricsType::StateSet => "stateset",
+            OpenMetricsType::Info => "info",
+        };
+
+        f.write_str(out)
     }
 }
 
