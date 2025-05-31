@@ -87,7 +87,12 @@ where
         return self.label_names.as_ref().as_slice();
     }
 
-    pub fn clone_and_convert_type<T: RenderableMetricValue + Clone>(&self) -> MetricFamily<TypeSet, T> where T: From<ValueType> {
+    pub fn clone_and_convert_type<T: RenderableMetricValue + Clone>(
+        &self,
+    ) -> MetricFamily<TypeSet, T>
+    where
+        T: From<ValueType>,
+    {
         MetricFamily {
             family_name: self.family_name.clone(),
             label_names: Arc::new((*self.label_names).clone()),
@@ -109,7 +114,7 @@ where
         let mut label_names = self.label_names.as_ref().clone();
         let mut samples = self.metrics.clone();
         for (k, v) in labels {
-            match label_names.binary_search(&k.to_owned() ) {
+            match label_names.binary_search(&k.to_owned()) {
                 Ok(idx) => {
                     for sample in samples.iter_mut() {
                         sample.label_values[idx] = v.to_owned();
@@ -118,7 +123,7 @@ where
                 Err(idx) => {
                     label_names.insert(idx, k.to_owned());
                     for sample in samples.iter_mut() {
-                        sample.label_values.insert(idx,v.to_owned());
+                        sample.label_values.insert(idx, v.to_owned());
                     }
                 }
             }
@@ -167,6 +172,10 @@ where
 
     pub fn into_iter_samples(self) -> impl Iterator<Item = Sample<ValueType>> {
         self.metrics.into_iter()
+    }
+
+    pub fn samples_count(&self) -> usize {
+        self.metrics.len()
     }
 
     pub fn iter_samples(&self) -> impl Iterator<Item = &Sample<ValueType>> {
@@ -320,7 +329,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, (_, family)) in self.families.iter().enumerate() {
             write!(f, "{}", family)?;
-            if i != self.families.len()-1 {
+            if i != self.families.len() - 1 {
                 write!(f, "\n")?;
             }
         }
@@ -353,14 +362,11 @@ pub struct CounterValue {
 fn format_float(f: f64) -> String {
     if f == f64::NEG_INFINITY {
         String::from("-Inf")
-    }
-    else if f == f64::INFINITY {
+    } else if f == f64::INFINITY {
         String::from("+Inf")
-    }
-    else if f.is_nan() {
+    } else if f.is_nan() {
         String::from("NaN")
-    }
-    else {
+    } else {
         format!("{}", f)
     }
 }
@@ -645,12 +651,14 @@ impl RenderableMetricValue for OpenMetricsValue {
         label_names: &[&str],
         label_values: &[&str],
     ) -> fmt::Result {
-        let timestamp_str = timestamp.map(|t| format!(" {}", format_float(*t))).unwrap_or_default();
+        let timestamp_str = timestamp
+            .map(|t| format!(" {}", format_float(*t)))
+            .unwrap_or_default();
         match self {
             OpenMetricsValue::Unknown(n)
             | OpenMetricsValue::Untyped(n)
             | OpenMetricsValue::Gauge(n)
-            | OpenMetricsValue::StateSet(n) =>{
+            | OpenMetricsValue::StateSet(n) => {
                 writeln!(
                     f,
                     "{}{} {}{}",
@@ -659,7 +667,7 @@ impl RenderableMetricValue for OpenMetricsValue {
                     n,
                     timestamp_str
                 )
-            },
+            }
             OpenMetricsValue::Counter(c) => {
                 write!(
                     f,
@@ -729,6 +737,7 @@ pub struct PrometheusCounterValue {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrometheusValue {
+    Untyped(MetricNumber),
     Unknown(MetricNumber),
     Gauge(MetricNumber),
     Counter(PrometheusCounterValue),
@@ -745,9 +754,13 @@ impl RenderableMetricValue for PrometheusValue {
         label_names: &[&str],
         label_values: &[&str],
     ) -> fmt::Result {
-        let timestamp_str = timestamp.map(|t| format!(" {}", format_float(*t))).unwrap_or_default();
+        let timestamp_str = timestamp
+            .map(|t| format!(" {}", format_float(*t)))
+            .unwrap_or_default();
         match self {
-            PrometheusValue::Unknown(n) | PrometheusValue::Gauge(n) => writeln!(
+            PrometheusValue::Unknown(n)
+            | PrometheusValue::Untyped(n)
+            | PrometheusValue::Gauge(n) => writeln!(
                 f,
                 "{}{} {}{}",
                 metric_name,
@@ -801,13 +814,16 @@ where
         }
     }
 
-    fn clone_with_new_value<T>(&self, value: T) -> Sample<T> where T: RenderableMetricValue + Clone {
+    fn clone_with_new_value<T>(&self, value: T) -> Sample<T>
+    where
+        T: RenderableMetricValue + Clone,
+    {
         return Sample {
             label_names: self.label_names.clone(),
             label_values: self.label_values.clone(),
             timestamp: self.timestamp.clone(),
             value,
-        }
+        };
     }
 
     fn set_label_names(&mut self, label_names: Arc<Vec<String>>) {
@@ -820,13 +836,22 @@ where
                 let mut label_values = self.label_values.clone();
                 label_values.remove(idx);
 
-                return Ok(Self::new(label_values, self.timestamp.clone(), self.value.clone()));
+                return Ok(Self::new(
+                    label_values,
+                    self.timestamp.clone(),
+                    self.value.clone(),
+                ));
             }
 
-            return Err(ParseError::InvalidMetric(format!("Label {} doesn't existin in metric", label_name)));
+            return Err(ParseError::InvalidMetric(format!(
+                "Label {} doesn't existin in metric",
+                label_name
+            )));
         }
 
-        return Err(ParseError::InvalidMetric(format!("Metric isn't bound to a family, so doesn't have names")));
+        return Err(ParseError::InvalidMetric(format!(
+            "Metric isn't bound to a family, so doesn't have names"
+        )));
     }
 
     pub fn get_labelset(&self) -> Result<LabelSet, ParseError> {

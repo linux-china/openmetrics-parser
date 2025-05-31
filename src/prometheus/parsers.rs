@@ -644,6 +644,7 @@ impl From<MetricValueMarshal> for PrometheusValue {
     fn from(m: MetricValueMarshal) -> PrometheusValue {
         match m {
             MetricValueMarshal::Unknown(u) => PrometheusValue::Unknown(u.unwrap()),
+            MetricValueMarshal::Untyped(u) => PrometheusValue::Untyped(u.unwrap()),
             MetricValueMarshal::Gauge(g) => PrometheusValue::Gauge(g.unwrap()),
             MetricValueMarshal::Counter(c) => PrometheusValue::Counter(c.into()),
             MetricValueMarshal::Histogram(h) => PrometheusValue::Histogram(h),
